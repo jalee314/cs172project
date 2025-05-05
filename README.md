@@ -39,4 +39,4 @@ For Windows users, you can run the crawler by either double clicking the batch f
 * max_file_size_mb (optional): Max size of each JSON file in MB (default: 10)
 
 ## Crawler Architecture
-![Crawler_Architecture](https://github.com/user-attachments/assets/e6d31ddc-d035-4841-b976-415750a1b1c9)
+![crawlerdiagram drawio(killswitch)](https://github.com/user-attachments/assets/5a5f46a5-6939-4378-a6fe-85a2887a15a8)
