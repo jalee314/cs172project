@@ -1,8 +1,8 @@
 # CS 172 Project
 
-CS172 Reddit Crawler
+# CS172 Reddit Crawler
 
-# Running the Program 
+## Running the Crawler 
 
 For Mac/Linux Users, follow these commands to set up your virtual environment
 
@@ -38,5 +38,5 @@ For Windows users, you can run the crawler by either double clicking the batch f
 
 * max_file_size_mb (optional): Max size of each JSON file in MB (default: 10)
 
-# Crawler Architecture
+## Crawler Architecture
 ![Crawler_Architecture](https://github.com/user-attachments/assets/e6d31ddc-d035-4841-b976-415750a1b1c9)
