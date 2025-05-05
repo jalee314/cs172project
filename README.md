@@ -12,7 +12,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-For Window Users, follow these commands to set up your virtual environment
+For Windows Users, follow these commands to set up your virtual environment
 
 ```powershell
 python -m venv venv
@@ -30,7 +30,7 @@ For Mac/Linux users, you can run the crawler using the provided shell script:
 * max_file_size_mb (optional): Max size of each JSON file in MB (default: 10)
 
 
-For Window users, you can run the crawler by either double clicking the batch file or by inputting in powershell
+For Windows users, you can run the crawler by either double clicking the batch file or by typing in Powershell
 ```
 .\crawler.bat <num_threads> <max_file_size_mb>
 ```
