@@ -5,11 +5,23 @@ import time
 import requests
 import json
 import os
+import argparse
 from bs4 import BeautifulSoup
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Reddit post crawler")
+    parser.add_argument(
+        "--threads",
+        type=int,
+        default=10,
+        help="Number of worker threads to use (default: 10)"
+    )
+    return parser.parse_args()
+
 
 class SaverThread(threading.Thread):
     
-    def __init__(self, json_queue, directory=".", filename_prefix="data_", max_size_mb=50):
+    def __init__(self, json_queue, directory=".", filename_prefix="data_", max_size_mb=10):
         super().__init__()
         self.json_queue = json_queue
         self.directory = directory
@@ -50,7 +62,13 @@ class SaverThread(threading.Thread):
                     json_obj = self.json_queue.get(timeout=1)
                     json_data = json.dumps(json_obj, ensure_ascii=False)
                     self.curr_file.write(json_data + "\n")
-                    self.curr_file_size += len(json_data.encode("utf-8")) + 1
+                    data_size = len(json_data.encode("utf-8")) + 1
+                    self.curr_file_size += data_size
+                    total_written += data_size
+
+                    if total_written >= 500 * 1024 * 1024 and not kill_switch:
+                        print("[Saver Thread] Max MB limit reached. Stopping.")
+                        kill_switch = True  # set the flag but do NOT break here
 
                     if self.curr_file_size >= self.max_size_bytes:
                         self.curr_file.close()
@@ -67,7 +85,6 @@ class SaverThread(threading.Thread):
                         break
                     time.sleep(0.5)
 
-
         finally:
             if self.curr_file:
                 self.curr_file.close()
@@ -76,6 +93,11 @@ class SaverThread(threading.Thread):
 def getHTMLTitle(url): 
     try:
         page = requests.get(url, timeout=3) #if no response after 3 seconds just abort 
+        
+        if page.status_code != 200:
+            print(f"[getHTMLTitle] HTTP {page.status_code} for {url}, will not add to json.")
+            return None
+        
         soup = BeautifulSoup(page.text, "html.parser") #opted to use page.text over page.content, text returns string while content returns byte just makes more sense
         return soup.title.string.strip() if soup.title else None #returns content of <title> tag if it exists 
     except:
@@ -86,35 +108,47 @@ def getHTMLTitle(url):
 def worker():
 
     while True:                     
-
-        if kill_switch and post_frontier.empty():       
+        
+        if kill_switch:
+            post_frontier.task_done()
             break
       
         try:
             post = post_frontier.get(timeout=3)     #don't let the thread hang, move on if taking too long
-        except queue.Empty:
-            if kill_switch and post_frontier.empty():
+            if kill_switch:
+                post_frontier.task_done()
                 break
-            continue
 
-        post_dict_lock.acquire()        #lock the hashmap to prevent race conditions since multiple threads will be writing to it
-        if post in post_dict:       
-            post_dict_lock.release()
-            post_frontier.task_done()       #let queue know thread is finished so that it doesn't hang 
-            continue                    
-        else:
-            #if we have not, add it to the dict
-            post_dict[post] = True
-            post_dict_lock.release()
+            post_dict_lock.acquire()        #lock the hashmap to prevent race conditions since multiple threads will be writing to it
+            if post in post_dict:       
+                post_dict_lock.release()
+                post_frontier.task_done()       #let queue know thread is finished so that it doesn't hang 
+                continue                    
+            else:
+                #if we have not, add it to the dict
+                post_dict[post] = True
+                post_dict_lock.release()
 
-        try:
-            #get the submission object from the url
-            submission = reddit.submission(url=post)  
-            submission.comments.replace_more(limit=0) 
-            comments = [c.body for c in submission.comments.list()]     #Store comments from the submission as a list #https://praw.readthedocs.io/en/stable/code_overview/models/submission.html
-        
+            while True:
+                try:
+                    #get the submission object from the url
+                    submission = reddit.submission(id=post)  
+                    submission.comments.replace_more(limit=0) 
+                    comments = [c.body for c in submission.comments.list()]     #Store comments from the submission as a list #https://praw.readthedocs.io/en/stable/code_overview/models/submission.html
+                    break
+                except Exception as e:
+                    if "429" in str(e):
+                        print(f"[Worker Thread] Rate limit hit on post {post}, sleeping...")
+                        time.sleep(5)
+                        continue
+                    else:
+                        print(f"[Worker Thread] Error on post {post} - {e}")
+                        comments = []
+                        break
+
             post_json = {
                 "id": submission.id,
+                "subreddit": str(submission.subreddit),
                 "author": str(submission.author),
                 "created_utc": submission.created_utc,
                 "title": submission.title,
@@ -125,24 +159,29 @@ def worker():
                 "comments": comments
             }
 
-             #from instructions: If a post contains a URL to an html page, get title of that page, and add title as an additional field of the post, that is, include it in the JSON of the post, so it becomes searchable in Part B.
-            if submission.selftext.startswith("http") and not submission.url.startswith("https://www.reddit.com"):  
-                html_title = getHTMLTitle(submission.url)
-                if html_title:
-                    post_json["linked_page_title"] = html_title 
-
+                
+            #from instructions: If a post contains a URL to an html page, get title of that page, and add title as an additional field of the post, that is, include it in the JSON of the post, so it becomes searchable in Part B.
+            if not submission.is_self:  
+                try:
+                    html_title = getHTMLTitle(submission.url)
+                    if html_title:
+                        post_json["linked_page_title"] = html_title 
+                except Exception as e:
+                    print(f"[Worker Thread] Couldn't fetch title for {submission.url} - {e}")
             json_frontier.put(post_json)
 
             print(f"[Worker Thread] Processed Post: {submission.title}")
-
+        except queue.Empty:
+            if kill_switch and post_frontier.empty():
+                break
         except Exception as e:
-            print(f"[Worker Thread] Error encountered processing post: {post}\n{e}")
+            print(f"[Worker Thread] Error encountered processing post: {post} - {e}")
 
         finally:
-            post_frontier.task_done()
+            if post in locals():
+                post_frontier.task_done()
 
-
-
+args = parse_args()
 reddit = praw.Reddit(
     client_id="Epb2_BoxRkCg8Lg2ctrbyg",
     client_secret="PcpZsf-R6DqoxFcj9RLFRRAmwW0WFw",
@@ -162,17 +201,18 @@ kill_switch = False #to be changed by the saver thread to kill the main thread, 
 
 saver_thread = SaverThread(json_frontier, directory="output_files") #only one thread to save to disk, avoids conflicts for data access 
 saver_thread.start()
+start_time = time.time()
 
 #seeds for the worker threads, these are the subreddits we want to crawl
-subreddits_list = ['askreddit']
+subreddits_list = ['nba','sports', 'learnpython', 'csmajors', 'marvelrivals'] #change to whatever you wants
 
 #populate the post frontier with the seeds
 for subreddit in subreddits_list:
-    for submission in reddit.subreddit(subreddit).hot(limit=100):
-        post_frontier.put(submission.url)
+    for submission in reddit.subreddit(subreddit).hot(limit=10000):
+        post_frontier.put(submission.id)
 
 # Launch N worker threads that will pull from the post frontier and push to the json frontier
-NUM_WORKERS = 10
+NUM_WORKERS = args.threads
 
 worker_threads = []
 for _ in range(NUM_WORKERS):
@@ -180,14 +220,14 @@ for _ in range(NUM_WORKERS):
     t.start()
     worker_threads.append(t)
 
-post_frontier.join()
 json_frontier.join()
 
-kill_switch = True
+saver_thread.join()
 
 for t in worker_threads:
     t.join()
 
 #kill the main thread when we hit the save limit in saver thread 
 
-saver_thread.join()
+end_time = time.time()
+print(f"\n[Crawler] Finished in {end_time - start_time:.2f} seconds.")
