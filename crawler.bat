@@ -10,6 +10,6 @@ if not "%~2"=="" set MAX_SIZE_MB=%~2
 
 echo Starting Reddit crawler with %THREADS% threads and max file size of %MAX_SIZE_MB% MB...
 
-python3 crawler.py --threads %THREADS% --max-size-mb %MAX_SIZE_MB%
+.\venv\Scripts\python.exe crawler.py --threads %THREADS% --max-size-mb %MAX_SIZE_MB%
 
 pause
