@@ -37,3 +37,6 @@ For Windows users, you can run the crawler by either double clicking the batch f
 * num_threads (optional): Number of worker threads to use (default: 10)
 
 * max_file_size_mb (optional): Max size of each JSON file in MB (default: 10)
+
+# Crawler Architecture
+![Crawler_Architecture](https://github.com/user-attachments/assets/e6d31ddc-d035-4841-b976-415750a1b1c9)
