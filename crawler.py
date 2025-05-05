@@ -16,6 +16,12 @@ def parse_args():
         default=10,
         help="Number of worker threads to use (default: 10)"
     )
+    parser.add_argument(
+        "--max-size-mb",
+        type=int,
+        default=10,
+        help="Max size per json file (default: 10 MB)"
+    )
     return parser.parse_args()
 
 
@@ -199,16 +205,16 @@ post_dict = {} #to detect duplicate post links in main thread before creating a 
 kill_switch = False #to be changed by the saver thread to kill the main thread, alert workers when we hit the save limit
 
 
-saver_thread = SaverThread(json_frontier, directory="output_files") #only one thread to save to disk, avoids conflicts for data access 
+saver_thread = SaverThread(json_frontier, directory="output_files", max_size_mb=args.max_size_mb) #only one thread to save to disk, avoids conflicts for data access 
 saver_thread.start()
 start_time = time.time()
 
 #seeds for the worker threads, these are the subreddits we want to crawl
-subreddits_list = ['nba','askreddit', 'marvelrivals', 'music' , 'politics', 'learnpython', 'csmajors', 'nfl', 'AITAH', 'wallstreetbets'] #change to whatever you wants
+subreddits_list = ['nba','askreddit', 'marvelrivals', 'music'] #change to whatever you wants
 
 #populate the post frontier with the seeds
 for subreddit in subreddits_list:
-    for submission in reddit.subreddit(subreddit).top(limit=50000):
+    for submission in reddit.subreddit(subreddit).top(limit=10000):
         post_frontier.put(submission.id)
 
 # Launch N worker threads that will pull from the post frontier and push to the json frontier
