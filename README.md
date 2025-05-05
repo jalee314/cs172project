@@ -19,7 +19,7 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
-You can run the crawler using the provided shell script:
+You can run the crawler using the provided shell scripst:
 
 ```
 ./crawler.sh <num_threads> <max_file_size_mb>
