@@ -204,7 +204,7 @@ saver_thread.start()
 start_time = time.time()
 
 #seeds for the worker threads, these are the subreddits we want to crawl
-subreddits_list = ['nba','sports', 'learnpython', 'csmajors', 'marvelrivals'] #change to whatever you wants
+subreddits_list = ['nba','askreddit', 'marvelrivals', 'music' , 'politics', 'learnpython', 'csmajors', 'nfl', 'AITAH', 'wallstreetbets'] #change to whatever you wants
 
 #populate the post frontier with the seeds
 for subreddit in subreddits_list:
