@@ -208,7 +208,7 @@ subreddits_list = ['nba','askreddit', 'marvelrivals', 'music' , 'politics', 'lea
 
 #populate the post frontier with the seeds
 for subreddit in subreddits_list:
-    for submission in reddit.subreddit(subreddit).hot(limit=10000):
+    for submission in reddit.subreddit(subreddit).top(limit=50000):
         post_frontier.put(submission.id)
 
 # Launch N worker threads that will pull from the post frontier and push to the json frontier
