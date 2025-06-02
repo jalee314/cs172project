@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, session, redirect, url_for
 from datetime import timedelta, datetime
+from lucene_query import search_index
 
 app = Flask(__name__)
 

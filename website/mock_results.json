@@ -1,0 +1,42 @@
+[
+    {
+      "rank": 1,
+      "title": "Understanding Machine Learning Basics",
+      "upvotes": 180,
+      "date": "2025-06-01T10:00:00Z",
+      "author": "ml_expert",
+      "url": "https://example.com/ml-basics"
+    },
+    {
+      "rank": 2,
+      "title": "Introduction to Neural Networks",
+      "upvotes": 145,
+      "date": "2025-05-30T15:20:00Z",
+      "author": "ai_guru",
+      "url": "https://example.com/neural-networks"
+    },
+    {
+      "rank": 3,
+      "title": "Top 10 Python Libraries for Data Science",
+      "upvotes": 210,
+      "date": "2025-05-28T12:45:00Z",
+      "author": "data_lover",
+      "url": "https://example.com/python-libs"
+    },
+    {
+      "rank": 4,
+      "title": "How to Deploy a Flask App",
+      "upvotes": 95,
+      "date": "2025-05-25T08:10:00Z",
+      "author": "webdev101",
+      "url": "https://example.com/flask-deploy"
+    },
+    {
+      "rank": 5,
+      "title": "Getting Started with Kubernetes",
+      "upvotes": 120,
+      "date": "2025-05-22T17:00:00Z",
+      "author": "cloud_pro",
+      "url": "https://example.com/kubernetes-start"
+    }
+  ]
