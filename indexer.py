@@ -4,7 +4,7 @@ import json
 import argparse
 from java.nio.file import Paths
 from org.apache.lucene.analysis.standard import StandardAnalyzer
-from org.apache.lucene.document import Document, Field, TextField, StringField, NumericDocValuesField, FieldType
+from org.apache.lucene.document import Document, Field, NumericDocValuesField, FieldType, StoredField
 from org.apache.lucene.index import IndexWriter, IndexWriterConfig, IndexOptions
 from org.apache.lucene.store import NIOFSDirectory
 
@@ -60,6 +60,11 @@ def create_index(index_dir, data_dir):
                         #index created_utc as a numeric field for sorting/range queries, convert from float to an int from slide 7 
                         timestamp = int(float(reddit_post['created_utc'])) 
                         doc.add(NumericDocValuesField('created_utc', timestamp))
+                        doc.add(StoredField("created_utc", timestamp))
+
+                        score = int(reddit_post['score'])
+                        doc.add(NumericDocValuesField('score', score))  #sorting 
+                        doc.add(StoredField('score', score)) #so we can display score, but dont need to index it 
 
                         #index comments as a single text field by joining them
                         comments_list = reddit_post.get('comments', [])  
