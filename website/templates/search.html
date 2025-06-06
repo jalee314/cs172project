@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>search reddit</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #fafafa;
+        margin: 20px;
+        color: #222;
+      }
+      form {
+        margin-bottom: 20px;
+      }
+      label {
+        font-weight: bold;
+        margin-right: 8px;
+      }
+      input[type="text"] {
+        padding: 6px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 250px;
+      }
+      input[type="submit"], button {
+        background-color: #0079d3;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      input[type="submit"]:hover, button:hover {
+        background-color: #005999;
+      }
+      .recent-queries button {
+        background-color: #FFA500;
+        padding: 6px 10px;
+        font-size: 0.9em;
+      }
+      .recent-queries button:hover {
+        background-color: #3385ff;
+      }
+      .recent-queries p {
+        font-size: 1.1em;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+      .recent-queries form {
+        display: inline-block;
+        margin-right: 10px;
+      }
+      .select-container {
+        margin-top: 10px;
+        padding: 8px;
+        background-color: #f0f0f0;
+        border-radius: 6px;
+        display: inline-block;
+      }
+      .reddit-post {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 15px 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border: 1px solid #ddd;
+        transition: box-shadow 0.3s ease;
+      }
+
+      .reddit-post:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      }
+
+    </style>
+  </head>
+
+
+
+  <body>
+    <form method="post">
+      <div>
+        <label for="searchbar">search reddit</label>
+        <input type="text" id="searchbar" name="searchbar" placeholder="....." required />
+
+        <div class="select-container">
+          <label for="sorting">sort by</label>
+          <select name="sorting" id="sorting">
+            <option value="none">query ranking</option>
+            <option value="upvotes">upvotes</option>
+            <option value="date">date</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <input type="submit" />
+      </div>
+    </form>
+
+    {% if recent_length > 0 %}
+      <div class="recent-queries">
+        <p>recent queries</p>
+
+        {% for query in query_list[0:10] %}
+          <form method="POST" class="recent-query-form">
+            <input type="hidden" name="searchbar" value="{{ query }}" />
+            <button type="submit">{{ query }}</button>
+          </form>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+
+
+    
+    <div id="reddit-results"></div>
+
+    
+    
+    
+    <!--this part will set the sorting box value to the recent query buttons -->
+    <script>
+      // Injected by Jinja2 backend — must be JSON-serializable
+      const redditResponses = {{ response_data | tojson }};
+      const query = {{current_query | tojson}}
+
+      const container = document.getElementById("reddit-results");
+      const sortingDropdown = document.getElementById("sorting");
+
+      function renderResults(posts) {
+        container.innerHTML = ""; // clear previous
+
+        if(query != ''){
+          // Create and insert the "Results for {query}" heading
+          const heading = document.createElement("h2");
+          heading.textContent = `showing results for "${query}"`;
+          container.appendChild(heading);
+        }
+        posts.forEach(post => {
+          const div = document.createElement("div");
+          div.className = "reddit-post";
+          div.innerHTML = `
+            <p>${post.title}</p>
+            <p><strong>Upvotes:</strong> ${post.upvotes}</p>
+            <p><strong>Date:</strong> ${new Date(post.date).toLocaleString()}</p>
+          `;
+          container.appendChild(div);
+        });
+      }
+
+      function sortResults(method) {
+        const sorted = [...redditResponses]; // shallow copy
+        if (method === "upvotes") {
+          sorted.sort((a, b) => b.upvotes - a.upvotes);
+        } else if (method === "date") {
+          sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
+        }
+        renderResults(sorted);
+      }
+
+      // Listen for dropdown changes
+      sortingDropdown.addEventListener("change", () => {
+        const selected = sortingDropdown.value;
+        sortResults(selected);
+      });
+
+      // Initial render (unsorted or default)
+      renderResults(redditResponses);
+  </script>
+  </body>
+</html>
