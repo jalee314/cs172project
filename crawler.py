@@ -210,11 +210,11 @@ saver_thread.start()
 start_time = time.time()
 
 #seeds for the worker threads, these are the subreddits we want to crawl
-subreddits_list = ['nba','askreddit', 'marvelrivals', 'music'] #change to whatever you wants
+subreddits_list = ['nba', 'askreddit', 'todayilearned', 'politics', 'worldnews', 'AITAH', 'gaming'] #change to whatever you wants
 
 #populate the post frontier with the seeds
 for subreddit in subreddits_list:
-    for submission in reddit.subreddit(subreddit).top(limit=10000):
+    for submission in reddit.subreddit(subreddit).top(limit=20000):
         post_frontier.put(submission.id)
 
 # Launch N worker threads that will pull from the post frontier and push to the json frontier
