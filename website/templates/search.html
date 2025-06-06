@@ -89,9 +89,8 @@
         <div class="select-container">
           <label for="sorting">sort by</label>
           <select name="sorting" id="sorting">
-            <option value="none">query ranking</option>
+            <option value="none">BM25</option>
             <option value="upvotes">upvotes</option>
-            <option value="date">date</option>
           </select>
         </div>
       </div>
@@ -143,9 +142,13 @@
           const div = document.createElement("div");
           div.className = "reddit-post";
           div.innerHTML = `
-            <p>${post.title}</p>
-            <p><strong>Upvotes:</strong> ${post.upvotes}</p>
-            <p><strong>Date:</strong> ${new Date(post.date).toLocaleString()}</p>
+            <p><strong>Title:</strong> ${post.title}</p>
+            <p><strong>Score:</strong> ${post.score}</p>
+            <p><strong>Subreddit:</strong> ${post.subreddit}</p>
+            <p><strong>Excerpt:</strong> ${post.selftext}</p>
+            <p><strong>Comments:</strong> ${post.comments}</p>
+            <p><strong>Linked Page Title:</strong> ${post.linked_page_title}</p>
+            <p><a href="https://reddit.com${post.permalink}" target="_blank">View Post</a></p>
           `;
           container.appendChild(div);
         });
@@ -154,10 +157,8 @@
       function sortResults(method) {
         const sorted = [...redditResponses]; // shallow copy
         if (method === "upvotes") {
-          sorted.sort((a, b) => b.upvotes - a.upvotes);
-        } else if (method === "date") {
-          sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
-        }
+          sorted.sort((a, b) => b.score - a.score);
+        } 
         renderResults(sorted);
       }
 
