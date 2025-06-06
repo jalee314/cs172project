@@ -29,7 +29,7 @@ def search():
 
         #THIS IS WHERE QUERY AND RESPONSE IS HANDLED 
 
-        top_k_docs = search_reddit_index(inde)
+        top_k_docs = search_reddit_index('reddit_index', query)
 
 
         example_data = [
@@ -82,5 +82,5 @@ def search():
                            error=error,
                            query_list=queries,
                            recent_length = len(queries),
-                           response_data = example_data,
+                           response_data = top_k_docs,
                            current_query = query)
