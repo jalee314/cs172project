@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, session, redirect, url_for
 from datetime import timedelta, datetime
+from search import search_reddit_index
 
 app = Flask(__name__)
 
@@ -28,10 +29,7 @@ def search():
 
         #THIS IS WHERE QUERY AND RESPONSE IS HANDLED 
 
-        #run query into lucene 
-            #need to have indexed files availible 
-
-        #retreive and format results into json 
+        top_k_docs = search_reddit_index(inde)
 
 
         example_data = [
