@@ -130,26 +130,35 @@
       const sortingDropdown = document.getElementById("sorting");
 
       function renderResults(posts) {
-        container.innerHTML = ""; // clear previous
+        container.innerHTML = ""; 
 
-        if(query != ''){
-          // Create and insert the "Results for {query}" heading
-          const heading = document.createElement("h2");
-          heading.textContent = `showing results for "${query}"`;
-          container.appendChild(heading);
-        }
         posts.forEach(post => {
           const div = document.createElement("div");
           div.className = "reddit-post";
-          div.innerHTML = `
+          
+          // features that will always be included from json
+          let html = `
             <p><strong>Title:</strong> ${post.title}</p>
             <p><strong>Score:</strong> ${post.score}</p>
             <p><strong>Subreddit:</strong> ${post.subreddit}</p>
-            <p><strong>Excerpt:</strong> ${post.selftext}</p>
-            <p><strong>Comments:</strong> ${post.comments}</p>
-            <p><strong>Linked Page Title:</strong> ${post.linked_page_title}</p>
-            <p><a href="https://reddit.com${post.permalink}" target="_blank">View Post</a></p>
+            <p><strong>Upvotes:</strong> ${post.upvotes}</p>
           `;
+          
+          // only if there is an excerpt do we add it.
+          if (post.selftext.trim() !== '') {
+            html += `<p><strong>Excerpt:</strong> ${post.selftext}</p>`;
+          }
+          
+          html += `<p><strong>Comments:</strong> ${post.comments}</p>`;
+          
+          // only if there is a linked page title do we add it
+          if (post.linked_page_title.trim() !== '') {
+            html += `<p><strong>Linked Page Title:</strong> ${post.linked_page_title}</p>`;
+          }
+          
+          html += `<p><a href="https://reddit.com${post.permalink}" target="_blank">View Post</a></p>`;
+          
+          div.innerHTML = html;
           container.appendChild(div);
         });
       }
@@ -157,8 +166,10 @@
       function sortResults(method) {
         const sorted = [...redditResponses]; // shallow copy
         if (method === "upvotes") {
+          sorted.sort((a, b) => b.upvotes - a.upvotes);
+        } else if (method === "score") {
           sorted.sort((a, b) => b.score - a.score);
-        } 
+        }
         renderResults(sorted);
       }
 
