@@ -28,20 +28,18 @@ def search_reddit_index(index_dir, query, top_k=10):
     parser = MultiFieldQueryParser(fields, StandardAnalyzer(), boost_map)
     parsed_query = MultiFieldQueryParser.parse(parser, query)
 
-    topDocs = searcher.search(parsed_query, top_k).scoreDocs
+    hits = searcher.search(parsed_query, top_k).scoreDocs
     topkdocs = []
 
     # Convert document object to a list of dictionaries
-    for hit in topDocs:
+    for hit in hits:
         doc = searcher.doc(hit.doc)
-
-        # Need to add upvotes to the indexer to use it here
 
         # # Higher score if more upvotes
         score = hit.score # Default BM25
         upvotes_str = doc.get("upvotes")
         upvotes = int(upvotes_str) if upvotes_str else 0
-        final_score = score + 0.01 * upvotes	
+        final_score = score + 0.005 * upvotes	# small boost for upvotes when scores are similar
 
         topkdocs.append({
             "score": final_score,
