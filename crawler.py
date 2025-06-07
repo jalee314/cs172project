@@ -72,7 +72,7 @@ class SaverThread(threading.Thread):
                     self.curr_file_size += data_size
                     total_written += data_size
 
-                    if total_written >= 500 * 1024 * 1024 and not kill_switch:
+                    if total_written >= 50 * 1024 * 1024 and not kill_switch:
                         print("[Saver Thread] Max MB limit reached. Stopping.")
                         kill_switch = True  # set the flag but do NOT break here
 
@@ -214,7 +214,7 @@ subreddits_list = ['nba', 'askreddit', 'todayilearned', 'politics', 'worldnews',
 
 #populate the post frontier with the seeds
 for subreddit in subreddits_list:
-    for submission in reddit.subreddit(subreddit).top(limit=20000):
+    for submission in reddit.subreddit(subreddit).top(limit=200):
         post_frontier.put(submission.id)
 
 # Launch N worker threads that will pull from the post frontier and push to the json frontier
