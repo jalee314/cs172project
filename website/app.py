@@ -1,11 +1,15 @@
 from flask import Flask, request, render_template, session, redirect, url_for
 from datetime import timedelta, datetime
-#from search import search_reddit_index
+import lucene
+from search import search_reddit_index
 
 app = Flask(__name__)
 
 #needed for the session logic 
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+
+lucene.initVM(vmargs=['-Djava.awt.headless=true']) 
+
 
 #intial page that clears session and routes to the search page 
 @app.route('/')
@@ -20,6 +24,7 @@ def search():
     query = ''
     example_data = ''
     example_data_fresh = ''
+    top_k_docs = ''
     
     if request.method == 'POST':
         # Input from HTML form
@@ -30,7 +35,7 @@ def search():
 
         #THIS IS WHERE QUERY AND RESPONSE IS HANDLED 
 
-        #top_k_docs = search_reddit_index('reddit_index', query)
+        top_k_docs = search_reddit_index('reddit_index', query)
 
 
         example_data = [
@@ -114,5 +119,5 @@ def search():
                            error=error,
                            query_list=queries,
                            recent_length = len(queries),
-                           response_data = example_data_fresh,
+                           response_data = top_k_docs,
                            current_query = query)

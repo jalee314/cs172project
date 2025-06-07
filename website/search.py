@@ -9,9 +9,10 @@ from org.apache.lucene.store import NIOFSDirectory
 from org.apache.lucene.search import IndexSearcher
 from org.apache.lucene.queryparser.classic import MultiFieldQueryParser
 
-def search_reddit_index(index_dir, query, top_k=10):
-    # lucene.initVM(vmargs=['-Djava.awt.headless=true']) Already called in indexer.py, might crash if called again?
-    
+def search_reddit_index(index_dir, query, top_k=10):  
+
+    lucene.getVMEnv().attachCurrentThread()
+  
     storedir = NIOFSDirectory(Paths.get(index_dir))
     searcher = IndexSearcher(DirectoryReader.open(storedir))
 
@@ -45,6 +46,7 @@ def search_reddit_index(index_dir, query, top_k=10):
         topkdocs.append({
             "score": final_score,
             "title": doc.get("title"),
+            "upvotes": doc.get("score"),
             "selftext": doc.get("selftext")[:100] + "..." if doc.get("selftext") else "",
             "comments": doc.get("comments")[:100] + "..." if doc.get("comments") else "",
             "linked_page_title": doc.get("linked_page_title")[:100] + "..." if doc.get("linked_page_title") else "",
